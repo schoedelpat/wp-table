@@ -1,0 +1,99 @@
+/**
+ * WP Table Plugin Styles
+ */
+
+/* Staff Table Styles */
+.wp-staff-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.wp-staff-table th,
+.wp-staff-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.wp-staff-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #333;
+}
+
+.wp-staff-table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+/* Loading and Message Styles */
+.wp-table-loading {
+    padding: 20px;
+    text-align: center;
+    font-style: italic;
+    color: #666;
+}
+
+.wp-table-message {
+    padding: 12px 16px;
+    margin: 10px 0;
+    border-radius: 4px;
+    border-left: 4px solid;
+}
+
+.wp-table-message-success {
+    background-color: #d4edda;
+    border-color: #28a745;
+    color: #155724;
+}
+
+.wp-table-message-error {
+    background-color: #f8d7da;
+    border-color: #dc3545;
+    color: #721c24;
+}
+
+/* Error Log Styles */
+.log-level {
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.log-level-info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.log-level-warning {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.log-level-error {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.log-level-critical {
+    background-color: #dc3545;
+    color: #ffffff;
+}
+
+.context-data {
+    margin-top: 5px;
+    background: #f1f1f1;
+    padding: 10px;
+    border-radius: 3px;
+}
+
+.context-data pre {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.4;
+    max-height: 200px;
+    overflow-y: auto;
+}
