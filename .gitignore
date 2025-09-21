@@ -1,0 +1,78 @@
+# WP Table Plugin Development Files
+
+# WordPress
+wp-config.php
+wp-content/uploads/
+wp-content/cache/
+wp-content/backup-db/
+wp-content/upgrade/
+wp-content/uploads/
+.htaccess
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Node.js (if we add build tools later)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Composer (if we add PHP dependencies later)
+vendor/
+composer.lock
+
+# Build artifacts
+dist/
+build/
+
+# Log files
+*.log
+
+# Temporary files
+tmp/
+temp/
+.tmp
+
+# Archive files
+*.zip
+*.tar.gz
+*.rar
+
+# Backup files
+*.bak
+*.backup
+
+# Development database
+*.sql
+*.sqlite
+
+# PHPStorm
+.idea/
+
+# VSCode
+.vscode/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Local environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
