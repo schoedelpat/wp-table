@@ -1,0 +1,157 @@
+/* WP Table - Frontend Styles */
+
+.wp-table-container {
+    margin: 20px 0;
+    overflow-x: auto;
+}
+
+.wp-staff-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: inherit;
+}
+
+/* Default table style */
+.wp-table-style-default {
+    border: 1px solid #ddd;
+}
+
+.wp-table-style-default th,
+.wp-table-style-default td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.wp-table-style-default th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Striped table style */
+.wp-table-style-striped {
+    border: 1px solid #ddd;
+}
+
+.wp-table-style-striped th,
+.wp-table-style-striped td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.wp-table-style-striped th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #333;
+}
+
+.wp-table-style-striped tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+/* Bordered table style */
+.wp-table-style-bordered {
+    border: 2px solid #333;
+}
+
+.wp-table-style-bordered th,
+.wp-table-style-bordered td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #333;
+}
+
+.wp-table-style-bordered th {
+    background-color: #333;
+    color: #fff;
+    font-weight: 600;
+}
+
+/* Minimal table style */
+.wp-table-style-minimal th,
+.wp-table-style-minimal td {
+    padding: 8px 12px;
+    text-align: left;
+    border: none;
+    border-bottom: 1px solid #eee;
+}
+
+.wp-table-style-minimal th {
+    font-weight: 600;
+    color: #333;
+    background: none;
+}
+
+.wp-table-style-minimal tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Column specific styling */
+.wp-table-name {
+    font-weight: 600;
+}
+
+.wp-table-email a,
+.wp-table-phone a {
+    text-decoration: none;
+    color: #0073aa;
+}
+
+.wp-table-email a:hover,
+.wp-table-phone a:hover {
+    text-decoration: underline;
+}
+
+.wp-table-hours {
+    font-family: monospace;
+    white-space: nowrap;
+}
+
+/* Status indicators */
+.wp-table-status-active {
+    /* You can add specific styling for active staff */
+}
+
+.wp-table-status-inactive {
+    opacity: 0.6;
+}
+
+/* No staff message */
+.wp-table-no-staff {
+    text-align: center;
+    padding: 20px;
+    font-style: italic;
+    color: #666;
+}
+
+/* Responsive design */
+@media screen and (max-width: 768px) {
+    .wp-table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .wp-staff-table {
+        min-width: 600px;
+    }
+    
+    .wp-staff-table th,
+    .wp-staff-table td {
+        padding: 8px;
+        font-size: 14px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .wp-staff-table {
+        min-width: 500px;
+    }
+    
+    .wp-staff-table th,
+    .wp-staff-table td {
+        padding: 6px;
+        font-size: 13px;
+    }
+}
