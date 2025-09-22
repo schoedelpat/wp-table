@@ -101,7 +101,7 @@ class WP_Table_Plugin {
     public function setup_database() {
         global $wpdb;
         
-        $table_name = $wpdb->prefix . 'staff_table';
+        $table_name = $wpdb->prefix . 'wp_table_staff';
         
         $charset_collate = $wpdb->get_charset_collate();
         
@@ -109,8 +109,13 @@ class WP_Table_Plugin {
             id mediumint(9) NOT NULL AUTO_INCREMENT,
             name tinytext NOT NULL,
             position varchar(100) NOT NULL,
+            email varchar(100) DEFAULT '' NOT NULL,
+            phone varchar(20) DEFAULT '' NOT NULL,
             start_time time NOT NULL,
             end_time time NOT NULL,
+            status varchar(20) DEFAULT 'active' NOT NULL,
+            image_url varchar(255) DEFAULT '' NOT NULL,
+            image_size int(3) DEFAULT 300 NOT NULL,
             created_at datetime DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id)
@@ -153,14 +158,115 @@ class WP_Table_Plugin {
      */
     public function staff_table_shortcode($atts) {
         $atts = shortcode_atts(array(
-            'show_times' => 'true',
+            'show_images' => get_option('wp_table_show_images', 'yes'),
+            'show_times' => get_option('wp_table_show_times', 'yes'),
+            'show_email' => get_option('wp_table_show_email', 'no'),
+            'show_phone' => get_option('wp_table_show_phone', 'no'),
+            'status' => 'active',
+            'image_size' => get_option('wp_table_default_image_size', 300),
             'class' => 'wp-staff-table-container'
         ), $atts);
+        
+        // Get staff data
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'wp_table_staff';
+        
+        $where_clause = '';
+        if ($atts['status'] !== 'all') {
+            $where_clause = $wpdb->prepare(' WHERE status = %s', $atts['status']);
+        }
+        
+        $staff_list = $wpdb->get_results(
+            "SELECT * FROM {$table_name}{$where_clause} ORDER BY name ASC",
+            ARRAY_A
+        );
+        
+        if (!$staff_list) {
+            return '<div class="wp-table-no-staff"><p>' . esc_html__('No staff members found.') . '</p></div>';
+        }
+        
+        // Sanitize image size
+        $image_size = intval($atts['image_size']);
+        if ($image_size < 100 || $image_size > 500) {
+            $image_size = 300;
+        }
         
         ob_start();
         ?>
         <div class="<?php echo esc_attr($atts['class']); ?>">
-            <div class="wp-table-loading">Loading staff data...</div>
+            <table class="wp-staff-table">
+                <thead>
+                    <tr>
+                        <?php if ($atts['show_images'] === 'true' || $atts['show_images'] === 'yes') : ?>
+                            <th class="wp-table-image"><?php echo esc_html__('Photo'); ?></th>
+                        <?php endif; ?>
+                        <th class="wp-table-name"><?php echo esc_html__('Name'); ?></th>
+                        <th class="wp-table-position"><?php echo esc_html__('Position'); ?></th>
+                        <?php if ($atts['show_email'] === 'true' || $atts['show_email'] === 'yes') : ?>
+                            <th class="wp-table-email"><?php echo esc_html__('Email'); ?></th>
+                        <?php endif; ?>
+                        <?php if ($atts['show_phone'] === 'true' || $atts['show_phone'] === 'yes') : ?>
+                            <th class="wp-table-phone"><?php echo esc_html__('Phone'); ?></th>
+                        <?php endif; ?>
+                        <?php if ($atts['show_times'] === 'true' || $atts['show_times'] === 'yes') : ?>
+                            <th class="wp-table-hours"><?php echo esc_html__('Working Hours'); ?></th>
+                        <?php endif; ?>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($staff_list as $staff) : ?>
+                        <tr>
+                            <?php if ($atts['show_images'] === 'true' || $atts['show_images'] === 'yes') : ?>
+                                <td class="wp-table-image">
+                                    <?php if (!empty($staff['image_url'])) : ?>
+                                        <img src="<?php echo esc_url($staff['image_url']); ?>" 
+                                             alt="<?php echo esc_attr($staff['name']); ?>" 
+                                             style="width: <?php echo esc_attr($image_size); ?>px; height: <?php echo esc_attr($image_size); ?>px; object-fit: cover; border-radius: 4px;">
+                                    <?php else : ?>
+                                        <div class="wp-table-no-image" 
+                                             style="width: <?php echo esc_attr($image_size); ?>px; height: <?php echo esc_attr($image_size); ?>px; background: #f0f0f0; border: 1px solid #ddd; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #666;">
+                                            <?php echo esc_html__('No Photo'); ?>
+                                        </div>
+                                    <?php endif; ?>
+                                </td>
+                            <?php endif; ?>
+                            <td class="wp-table-name">
+                                <strong><?php echo esc_html($staff['name']); ?></strong>
+                            </td>
+                            <td class="wp-table-position">
+                                <?php echo esc_html($staff['position']); ?>
+                            </td>
+                            <?php if ($atts['show_email'] === 'true' || $atts['show_email'] === 'yes') : ?>
+                                <td class="wp-table-email">
+                                    <?php if (!empty($staff['email'])) : ?>
+                                        <a href="mailto:<?php echo esc_attr($staff['email']); ?>">
+                                            <?php echo esc_html($staff['email']); ?>
+                                        </a>
+                                    <?php else : ?>
+                                        —
+                                    <?php endif; ?>
+                                </td>
+                            <?php endif; ?>
+                            <?php if ($atts['show_phone'] === 'true' || $atts['show_phone'] === 'yes') : ?>
+                                <td class="wp-table-phone">
+                                    <?php if (!empty($staff['phone'])) : ?>
+                                        <a href="tel:<?php echo esc_attr($staff['phone']); ?>">
+                                            <?php echo esc_html($staff['phone']); ?>
+                                        </a>
+                                    <?php else : ?>
+                                        —
+                                    <?php endif; ?>
+                                </td>
+                            <?php endif; ?>
+                            <?php if ($atts['show_times'] === 'true' || $atts['show_times'] === 'yes') : ?>
+                                <td class="wp-table-hours">
+                                    <?php echo esc_html($staff['start_time'] . ' - ' . $staff['end_time']); ?>
+                                </td>
+                            <?php endif; ?>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
         </div>
         <?php
         return ob_get_clean();
