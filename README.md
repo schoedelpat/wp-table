@@ -1,119 +1,162 @@
-# wp-table
-Staff Table Plugin for WordPress with Updatable Times
+# WP Table - Staff Table Plugin for WordPress
 
-## Overview
-This WordPress plugin provides a comprehensive staff management system with robust security measures and error handling. It allows administrators to manage staff members, their positions, and work times through a secure admin interface.
+A comprehensive WordPress plugin for displaying and managing staff information with image support, time tracking capabilities, and flexible display options. Perfect for businesses that need to showcase their team with profile photos, contact information, and working hours.
+
+## Features
+
+- **🖼️ Image Upload & Management**: Secure file upload with automatic square cropping and resizing (100-500px)
+- **👥 Staff Management**: Add, edit, and delete staff members through the WordPress admin
+- **📧 Contact Information**: Email and phone fields with click-to-contact functionality
+- **⏰ Time Management**: Track and display staff working hours
+- **📱 Responsive Design**: Tables work perfectly on desktop, tablet, and mobile devices
+- **🎯 Flexible Display**: Show/hide images, email, phone, and working hours as needed
+- **⚙️ Settings Page**: Configure default behaviors and image sizes
+- **🎨 Multiple Display Options**: Customizable shortcode parameters for different layouts
+- **📊 Status Management**: Active/inactive staff with visual indicators
+- **🔧 Admin Interface**: Comprehensive CRUD operations with bulk actions
+- **🛡️ Security**: Robust input validation and secure file handling
+- **🔄 Clean Uninstall**: Removes all data when plugin is deleted
+
+## Installation
+
+1. Upload the `wp-table` folder to the `/wp-content/plugins/` directory
+2. Activate the plugin through the 'Plugins' menu in WordPress
+3. Go to 'Staff Table' in the admin menu to start adding staff members
+4. Configure default settings in 'Staff Table > Settings'
+
+## Usage
+
+### Adding Staff Members
+
+1. Navigate to **Staff Table > Add Staff** in your WordPress admin
+2. Fill out the staff member form:
+   - **Profile Image**: Upload JPEG, PNG, or GIF (max 5MB, auto-cropped to square)
+   - **Image Size**: Adjust between 100-500px using the slider
+   - **Name** (required): Staff member's full name
+   - **Position** (required): Job title or role
+   - **Email**: Contact email address
+   - **Phone**: Contact phone number
+   - **Start/End Time** (required): Working hours
+   - **Status**: Active or Inactive
+3. Click "Add Staff Member"
+
+### Displaying Staff Table
+
+Use the shortcode `[wp_staff_table]` to display the staff table on any page or post.
+
+#### Shortcode Parameters
+
+- `show_images="true|false"` - Show staff images (default: based on settings)
+- `show_times="true|false"` - Show working hours (default: based on settings)
+- `show_email="true|false"` - Show email addresses (default: based on settings)
+- `show_phone="true|false"` - Show phone numbers (default: based on settings)
+- `status="active|inactive|all"` - Filter by status (default: active)
+- `image_size="100-500"` - Override image size in pixels (default: based on settings)
+
+#### Examples
+
+```
+[wp_staff_table]
+[wp_staff_table show_email="true" show_phone="true" image_size="200"]
+[wp_staff_table show_images="false" status="all"]
+[wp_staff_table show_times="false" show_email="true" image_size="150"]
+```
+
+### Settings
+
+Customize your plugin through **Staff Table > Settings**:
+
+- **Default Image Size**: Set the default size for new staff images (100-500px)
+- **Show Images by Default**: Configure whether images appear by default
+- **Show Email by Default**: Configure email display default
+- **Show Phone by Default**: Configure phone display default  
+- **Show Working Hours by Default**: Configure time display default
+
+## Database Structure
+
+The plugin creates a table `wp_wp_table_staff` with the following structure:
+
+- `id` - Unique staff member ID
+- `name` - Staff member name
+- `position` - Job position/title
+- `email` - Email address
+- `phone` - Phone number
+- `start_time` - Working day start time
+- `end_time` - Working day end time
+- `status` - Active or inactive status
+- `image_url` - URL to uploaded profile image
+- `image_size` - Image display size in pixels (100-500)
+- `created_at` - Record creation timestamp
+- `updated_at` - Last update timestamp
 
 ## Security Features
 
 ### Nonce Validation
 - All admin and AJAX actions require valid nonce verification
-- Separate nonces for admin actions (`wp_table_admin_nonce`) and public AJAX (`wp_table_ajax_nonce`)
-- Automatic nonce generation and validation in all forms and AJAX requests
+- Separate nonces for admin actions and public AJAX requests
+- Automatic nonce generation and validation in all forms
 
 ### Capability Checks
 - Admin operations require `manage_options` capability
-- Time updates require `edit_posts` capability
 - User permissions are verified before any database operations
+- File upload restricted to authorized users only
 
-### Input Sanitization
-- All user input is sanitized using WordPress functions (`sanitize_text_field`, etc.)
+### Input Sanitization & Validation
+- All user input is sanitized using WordPress functions
+- Image file validation (type, size, dimensions)
 - Time format validation using regex patterns
 - Staff ID validation to ensure positive integers
-- Position and name length limits enforced
 
 ### Output Escaping
 - All output is escaped using `esc_html()`, `esc_attr()`, `esc_url()`, and `esc_js()`
 - Admin templates properly escape all dynamic content
-- AJAX responses sanitize messages before sending
+- Image URLs are properly validated and escaped
 
 ### Database Security
 - All database operations use prepared statements with `$wpdb->prepare()`
-- Proper data type specifications (`%s`, `%d`) for prepared statements
+- Proper data type specifications for prepared statements
 - Safe insert, update, and delete operations with parameter binding
 
-### Error Handling
-- Comprehensive error logging system with different severity levels
-- Centralized error handler (`WP_Table_Error_Handler`) for consistent logging
-- Try/catch blocks around all critical operations
-- No sensitive data exposed in error responses
-- Admin notices for user feedback without revealing system details
+### File Upload Security
+- File type validation (JPEG, PNG, GIF only)
+- File size limits (5MB maximum)
+- Secure file naming with timestamp prefixes
+- Image processing to prevent malicious files
+- Automatic cleanup of temporary files
 
-## Features
+## File Structure
 
-### Admin Interface
-- **Staff Management**: Add, edit, delete staff members
-- **Bulk Operations**: Delete multiple staff members at once
-- **Error Logs**: View detailed error logs with context
-- **Time Management**: Update staff working hours
-- **Form Validation**: Client-side and server-side validation
-
-### AJAX Endpoints
-- **Get Staff**: Retrieve staff data for frontend display
-- **Add Staff**: Add new staff members via AJAX
-- **Update Staff**: Edit existing staff information
-- **Delete Staff**: Remove staff members
-- **Update Times**: Modify staff working hours
-
-### REST API
-- **GET /wp-table/v1/time/{id}**: Get staff time information
-- **POST /wp-table/v1/time/{id}**: Update staff working times
-- **GET /wp-table/v1/times**: Get all staff times
-
-### Frontend Display
-- **Shortcode**: `[wp_staff_table]` to display staff table
-- **Responsive Design**: Mobile-friendly table layout
-- **AJAX Loading**: Dynamic content loading without page refresh
-
-## Installation
-
-1. Upload the plugin files to `/wp-content/plugins/wp-table/`
-2. Activate the plugin through the WordPress admin interface
-3. Navigate to "Staff Table" in the admin menu to start managing staff
-
-## Usage
-
-### Admin Usage
-1. Go to **Staff Table** in WordPress admin
-2. Click **Add New Staff** to add staff members
-3. Fill in required information: Name, Position, Start Time, End Time
-4. Manage existing staff from the main Staff Table page
-5. View error logs from the **Error Logs** submenu
-
-### Frontend Usage
-Add the shortcode `[wp_staff_table]` to any post, page, or widget to display the staff table.
-
-## Security Implementation Details
-
-### File Structure
 ```
 wp-table/
-├── wp-table.php                           # Main plugin file
+├── wp-table.php                     # Main plugin file
 ├── admin/
-│   ├── class-admin.php                    # Admin interface with security
-│   └── templates/                         # Escaped admin templates
+│   ├── class-admin.php              # Admin interface with security
+│   └── templates/                   # Admin page templates
+│       ├── main-page.php            # Staff list page
+│       ├── add-staff.php            # Add/edit staff form
+│       └── settings-page.php        # Plugin settings
 ├── includes/
-│   ├── class-error-handler.php            # Centralized error handling
-│   ├── class-ajax-handler.php             # Secure AJAX operations
+│   ├── class-error-handler.php      # Centralized error handling
+│   ├── class-ajax-handler.php       # Secure AJAX operations
 │   └── endpoints/
-│       └── class-time-endpoint.php        # REST API endpoints
+│       └── class-time-endpoint.php  # REST API endpoints
 └── assets/
-    ├── js/                                # JavaScript with CSRF protection
-    └── css/                               # Styling
+    ├── js/                          # JavaScript with CSRF protection
+    │   ├── admin.js                 # Admin interface scripts
+    │   └── frontend.js              # Frontend table scripts
+    └── css/
+        └── wp-table.css             # Plugin styling
 ```
 
-### Security Checklist
-- [x] Nonce validation for all admin and AJAX actions
-- [x] Capability checks throughout the application
-- [x] Input sanitization for all user inputs
-- [x] Output escaping for all dynamic content
-- [x] Prepared statements for all database operations
-- [x] Try/catch blocks for defensive programming
-- [x] Centralized error logging without data exposure
-- [x] No sensitive information in AJAX responses
-- [x] CSRF protection in forms and AJAX requests
-- [x] SQL injection prevention via prepared statements
-- [x] XSS prevention via output escaping
+## Styling
+
+The plugin includes responsive CSS that works with most WordPress themes. You can customize the appearance by overriding the CSS classes in your theme:
+
+- `.wp-staff-table-container` - Main container wrapper
+- `.wp-staff-table` - The table element
+- `.wp-table-image` - Image column styling
+- `.wp-table-name`, `.wp-table-position`, etc. - Column-specific classes
+- `.wp-table-no-image` - Placeholder for missing images
 
 ## API Documentation
 
@@ -130,13 +173,15 @@ All AJAX actions require proper nonce validation and capability checks.
 - **Method**: POST
 - **Nonce**: wp_table_admin_nonce
 - **Capability**: manage_options
-- **Parameters**: name, position, start_time, end_time
+- **Parameters**: name, position, email, phone, start_time, end_time, status, image_size
+- **Files**: staff_image (optional)
 
 #### wp_table_update_staff
 - **Method**: POST
 - **Nonce**: wp_table_admin_nonce
 - **Capability**: manage_options
-- **Parameters**: staff_id, name, position, start_time, end_time
+- **Parameters**: staff_id, name, position, email, phone, start_time, end_time, status, image_size
+- **Files**: staff_image (optional)
 
 #### wp_table_delete_staff
 - **Method**: POST
@@ -144,24 +189,31 @@ All AJAX actions require proper nonce validation and capability checks.
 - **Capability**: manage_options
 - **Parameters**: staff_id
 
-#### wp_table_update_time
-- **Method**: POST
-- **Nonce**: wp_table_ajax_nonce
-- **Capability**: edit_posts
-- **Parameters**: staff_id, start_time, end_time
+## Requirements
+
+- WordPress 5.0 or higher
+- PHP 7.4 or higher
+- MySQL 5.6 or higher
+- GD or ImageMagick extension for image processing
 
 ## Changelog
 
-### 1.0.0
-- Initial release with comprehensive security implementation
-- Nonce validation and capability checks
-- Input sanitization and output escaping
-- Prepared statements for database operations
-- Centralized error handling and logging
-- AJAX endpoints with security measures
-- REST API with permission callbacks
-- Admin interface with form validation
-- Frontend shortcode with responsive design
+### Version 1.0.0
+- Initial release with comprehensive features
+- Image upload and processing system
+- Advanced admin interface with CRUD operations
+- Flexible shortcode with multiple parameters
+- Settings page for default configurations
+- Enhanced security with file upload validation
+- Responsive design for all devices
+- Database migration support
+- Comprehensive error handling and logging
+
+## Support
+
+For support, feature requests, or bug reports, please visit:
+[https://github.com/schoedelpat/wp-table](https://github.com/schoedelpat/wp-table)
 
 ## License
-GPL-2.0+
+
+This plugin is licensed under the GPL v3 or later.

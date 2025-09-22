@@ -2,12 +2,19 @@
  * WP Table Plugin Styles
  */
 
+/* Container Styles */
+.wp-staff-table-container {
+    overflow-x: auto;
+    margin: 20px 0;
+}
+
 /* Staff Table Styles */
 .wp-staff-table {
     width: 100%;
     border-collapse: collapse;
-    margin: 20px 0;
+    margin: 0;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background: white;
 }
 
 .wp-staff-table th,
@@ -15,16 +22,85 @@
     padding: 12px;
     text-align: left;
     border-bottom: 1px solid #ddd;
+    vertical-align: middle;
 }
 
 .wp-staff-table th {
     background-color: #f8f9fa;
     font-weight: 600;
     color: #333;
+    border-bottom: 2px solid #dee2e6;
 }
 
 .wp-staff-table tbody tr:hover {
     background-color: #f5f5f5;
+}
+
+.wp-staff-table tbody tr:nth-child(even) {
+    background-color: #fafbfc;
+}
+
+/* Image Column Styles */
+.wp-table-image {
+    width: 80px;
+    text-align: center;
+}
+
+.wp-table-image img {
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    max-width: 100%;
+    height: auto;
+}
+
+.wp-table-no-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: #999;
+    border: 2px dashed #ddd;
+    border-radius: 4px;
+    background: #f9f9f9;
+}
+
+/* Column Specific Styles */
+.wp-table-name {
+    font-weight: 600;
+    color: #333;
+}
+
+.wp-table-position {
+    color: #666;
+    font-style: italic;
+}
+
+.wp-table-email a,
+.wp-table-phone a {
+    color: #0073aa;
+    text-decoration: none;
+}
+
+.wp-table-email a:hover,
+.wp-table-phone a:hover {
+    color: #005a87;
+    text-decoration: underline;
+}
+
+.wp-table-hours {
+    font-family: monospace;
+    color: #555;
+}
+
+/* No Staff Message */
+.wp-table-no-staff {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+    font-style: italic;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
 }
 
 /* Loading and Message Styles */
@@ -52,6 +128,50 @@
     background-color: #f8d7da;
     border-color: #dc3545;
     color: #721c24;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .wp-staff-table-container {
+        margin: 10px 0;
+    }
+    
+    .wp-staff-table th,
+    .wp-staff-table td {
+        padding: 8px 6px;
+        font-size: 14px;
+    }
+    
+    .wp-table-image {
+        width: 60px;
+    }
+    
+    .wp-table-image img,
+    .wp-table-no-image {
+        width: 50px;
+        height: 50px;
+    }
+}
+
+@media (max-width: 480px) {
+    .wp-staff-table {
+        font-size: 12px;
+    }
+    
+    .wp-staff-table th,
+    .wp-staff-table td {
+        padding: 6px 4px;
+    }
+    
+    .wp-table-image {
+        width: 50px;
+    }
+    
+    .wp-table-image img,
+    .wp-table-no-image {
+        width: 40px;
+        height: 40px;
+    }
 }
 
 /* Error Log Styles */
