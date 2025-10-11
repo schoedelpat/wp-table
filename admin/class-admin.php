@@ -61,6 +61,15 @@ class WP_Table_Admin {
         
         add_submenu_page(
             'wp-table',
+            'Settings',
+            'Settings',
+            'manage_options',
+            'wp-table-settings',
+            array($this, 'display_settings_page')
+        );
+        
+        add_submenu_page(
+            'wp-table',
             'Error Logs',
             'Error Logs',
             'manage_options',
@@ -121,6 +130,25 @@ class WP_Table_Admin {
     }
     
     /**
+     * Display settings page
+     */
+    public function display_settings_page() {
+        try {
+            // Check capabilities
+            if (!$this->error_handler->check_capability('manage_options')) {
+                wp_die(esc_html__('You do not have sufficient permissions to access this page.'));
+            }
+            
+            // Include settings template
+            include_once WP_TABLE_PLUGIN_PATH . 'admin/templates/settings-page.php';
+            
+        } catch (Exception $e) {
+            $this->error_handler->handle_exception($e, 'display_settings_page');
+            echo '<div class="error"><p>' . esc_html__('Error loading settings page.') . '</p></div>';
+        }
+    }
+    
+    /**
      * Display error logs page
      */
     public function display_error_logs_page() {
@@ -163,6 +191,17 @@ class WP_Table_Admin {
             if (!$staff_data) {
                 $this->redirect_with_error('Invalid staff data provided.');
                 return;
+            }
+            
+            // Handle image upload if provided
+            if (!empty($_FILES['staff_image']['name'])) {
+                $image_result = $this->handle_image_upload($_FILES['staff_image'], $staff_data['image_size']);
+                if (is_wp_error($image_result)) {
+                    $this->redirect_with_error('Image upload failed: ' . $image_result->get_error_message());
+                    return;
+                } else {
+                    $staff_data['image_url'] = $image_result;
+                }
             }
             
             // Add staff member
@@ -216,6 +255,17 @@ class WP_Table_Admin {
             if (!$staff_data) {
                 $this->redirect_with_error('Invalid staff data provided.');
                 return;
+            }
+            
+            // Handle image upload if provided
+            if (!empty($_FILES['staff_image']['name'])) {
+                $image_result = $this->handle_image_upload($_FILES['staff_image'], $staff_data['image_size']);
+                if (is_wp_error($image_result)) {
+                    $this->redirect_with_error('Image upload failed: ' . $image_result->get_error_message());
+                    return;
+                } else {
+                    $staff_data['image_url'] = $image_result;
+                }
             }
             
             // Update staff member
@@ -364,8 +414,12 @@ class WP_Table_Admin {
     private function sanitize_staff_input($input) {
         $name = sanitize_text_field($input['name'] ?? '');
         $position = sanitize_text_field($input['position'] ?? '');
+        $email = sanitize_email($input['email'] ?? '');
+        $phone = sanitize_text_field($input['phone'] ?? '');
         $start_time = sanitize_text_field($input['start_time'] ?? '');
         $end_time = sanitize_text_field($input['end_time'] ?? '');
+        $status = sanitize_text_field($input['status'] ?? 'active');
+        $image_size = intval($input['image_size'] ?? 300);
         
         // Validate required fields
         if (empty($name) || empty($position) || empty($start_time) || empty($end_time)) {
@@ -382,11 +436,20 @@ class WP_Table_Admin {
             return false;
         }
         
+        // Validate image size (100-500px)
+        if ($image_size < 100 || $image_size > 500) {
+            $image_size = 300; // Default to 300px
+        }
+        
         return array(
             'name' => $name,
             'position' => $position,
+            'email' => $email,
+            'phone' => $phone,
             'start_time' => $start_time,
-            'end_time' => $end_time
+            'end_time' => $end_time,
+            'status' => $status,
+            'image_size' => $image_size
         );
     }
     
@@ -419,10 +482,10 @@ class WP_Table_Admin {
     private function get_staff_list() {
         global $wpdb;
         
-        $table_name = $wpdb->prefix . 'staff_table';
+        $table_name = $wpdb->prefix . 'wp_table_staff';
         
         $results = $wpdb->get_results($wpdb->prepare(
-            "SELECT id, name, position, start_time, end_time, created_at FROM {$table_name} ORDER BY name ASC"
+            "SELECT id, name, position, email, phone, start_time, end_time, status, image_url, image_size, created_at FROM {$table_name} ORDER BY name ASC"
         ), ARRAY_A);
         
         if ($wpdb->last_error) {
@@ -435,8 +498,13 @@ class WP_Table_Admin {
                 'id' => intval($row['id']),
                 'name' => esc_html($row['name']),
                 'position' => esc_html($row['position']),
+                'email' => esc_html($row['email']),
+                'phone' => esc_html($row['phone']),
                 'start_time' => esc_html($row['start_time']),
                 'end_time' => esc_html($row['end_time']),
+                'status' => esc_html($row['status']),
+                'image_url' => esc_url($row['image_url']),
+                'image_size' => intval($row['image_size']),
                 'created_at' => esc_html($row['created_at'])
             );
         }, $results ?: array());
@@ -451,12 +519,12 @@ class WP_Table_Admin {
     private function add_staff_member($staff_data) {
         global $wpdb;
         
-        $table_name = $wpdb->prefix . 'staff_table';
+        $table_name = $wpdb->prefix . 'wp_table_staff';
         
         $result = $wpdb->insert(
             $table_name,
             $staff_data,
-            array('%s', '%s', '%s', '%s')
+            array('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d')
         );
         
         if ($result === false) {
@@ -476,13 +544,13 @@ class WP_Table_Admin {
     private function update_staff_member($staff_id, $staff_data) {
         global $wpdb;
         
-        $table_name = $wpdb->prefix . 'staff_table';
+        $table_name = $wpdb->prefix . 'wp_table_staff';
         
         $result = $wpdb->update(
             $table_name,
             $staff_data,
             array('id' => $staff_id),
-            array('%s', '%s', '%s', '%s'),
+            array('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d'),
             array('%d')
         );
         
@@ -502,7 +570,7 @@ class WP_Table_Admin {
     private function delete_staff_member($staff_id) {
         global $wpdb;
         
-        $table_name = $wpdb->prefix . 'staff_table';
+        $table_name = $wpdb->prefix . 'wp_table_staff';
         
         $result = $wpdb->delete(
             $table_name,
@@ -526,7 +594,7 @@ class WP_Table_Admin {
     private function bulk_delete_staff_members($staff_ids) {
         global $wpdb;
         
-        $table_name = $wpdb->prefix . 'staff_table';
+        $table_name = $wpdb->prefix . 'wp_table_staff';
         $placeholders = implode(',', array_fill(0, count($staff_ids), '%d'));
         
         $result = $wpdb->query($wpdb->prepare(
@@ -550,7 +618,7 @@ class WP_Table_Admin {
     private function get_staff_name($staff_id) {
         global $wpdb;
         
-        $table_name = $wpdb->prefix . 'staff_table';
+        $table_name = $wpdb->prefix . 'wp_table_staff';
         
         $name = $wpdb->get_var($wpdb->prepare(
             "SELECT name FROM {$table_name} WHERE id = %d",
@@ -603,5 +671,137 @@ class WP_Table_Admin {
         $this->error_handler->add_admin_notice($message, 'success');
         wp_safe_redirect(admin_url('admin.php?page=wp-table'));
         exit;
+    }
+    
+    /**
+     * Handle image upload and processing
+     * 
+     * @param array $file Uploaded file data from $_FILES
+     * @param int $target_size Target image size (100-500px)
+     * @return string|WP_Error Image URL on success, WP_Error on failure
+     */
+    private function handle_image_upload($file, $target_size = 300) {
+        // Check for upload errors
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            return new WP_Error('upload_error', 'File upload failed.');
+        }
+        
+        // Validate file type
+        $allowed_types = array('image/jpeg', 'image/png', 'image/gif');
+        $file_type = wp_check_filetype($file['name']);
+        
+        if (!in_array($file['type'], $allowed_types) || !in_array($file_type['type'], $allowed_types)) {
+            return new WP_Error('invalid_file_type', 'Only JPEG, PNG, and GIF images are allowed.');
+        }
+        
+        // Check file size (max 5MB)
+        if ($file['size'] > 5 * 1024 * 1024) {
+            return new WP_Error('file_too_large', 'Image file size must be less than 5MB.');
+        }
+        
+        // Validate target size
+        if ($target_size < 100 || $target_size > 500) {
+            $target_size = 300;
+        }
+        
+        // Load WordPress media handling functions
+        if (!function_exists('wp_handle_upload')) {
+            require_once(ABSPATH . 'wp-admin/includes/file.php');
+        }
+        if (!function_exists('wp_crop_image')) {
+            require_once(ABSPATH . 'wp-admin/includes/image.php');
+        }
+        
+        // Handle the upload
+        $upload_overrides = array(
+            'test_form' => false,
+            'unique_filename_callback' => array($this, 'generate_unique_filename')
+        );
+        
+        $uploaded_file = wp_handle_upload($file, $upload_overrides);
+        
+        if (isset($uploaded_file['error'])) {
+            return new WP_Error('upload_failed', $uploaded_file['error']);
+        }
+        
+        // Process and resize the image
+        $processed_image = $this->process_staff_image($uploaded_file['file'], $target_size);
+        
+        if (is_wp_error($processed_image)) {
+            // Clean up original file
+            wp_delete_file($uploaded_file['file']);
+            return $processed_image;
+        }
+        
+        return $processed_image;
+    }
+    
+    /**
+     * Process staff image: resize and crop to square
+     * 
+     * @param string $image_path Path to uploaded image
+     * @param int $target_size Target size in pixels
+     * @return string|WP_Error Processed image URL on success, WP_Error on failure
+     */
+    private function process_staff_image($image_path, $target_size) {
+        // Get image info
+        $image_info = getimagesize($image_path);
+        if (!$image_info) {
+            return new WP_Error('invalid_image', 'Invalid image file.');
+        }
+        
+        $original_width = $image_info[0];
+        $original_height = $image_info[1];
+        
+        // Calculate crop dimensions to make it square
+        $crop_size = min($original_width, $original_height);
+        $crop_x = ($original_width - $crop_size) / 2;
+        $crop_y = ($original_height - $crop_size) / 2;
+        
+        // Create cropped image
+        $cropped_image = wp_crop_image(
+            $image_path,
+            $crop_x,
+            $crop_y,
+            $crop_size,
+            $crop_size,
+            $target_size,
+            $target_size
+        );
+        
+        if (is_wp_error($cropped_image)) {
+            return $cropped_image;
+        }
+        
+        // Generate new filename for processed image
+        $upload_dir = wp_upload_dir();
+        $filename = basename($image_path);
+        $processed_filename = 'staff-' . $target_size . 'x' . $target_size . '-' . $filename;
+        $processed_path = $upload_dir['path'] . '/' . $processed_filename;
+        
+        // Move processed image to final location
+        if (!rename($cropped_image, $processed_path)) {
+            wp_delete_file($cropped_image);
+            return new WP_Error('file_move_failed', 'Failed to move processed image.');
+        }
+        
+        // Clean up original file
+        wp_delete_file($image_path);
+        
+        // Return URL to processed image
+        return $upload_dir['url'] . '/' . $processed_filename;
+    }
+    
+    /**
+     * Generate unique filename for uploaded images
+     * 
+     * @param string $dir Upload directory
+     * @param string $name Original filename
+     * @param string $ext File extension
+     * @return string Unique filename
+     */
+    public function generate_unique_filename($dir, $name, $ext) {
+        $prefix = 'wp-table-staff-' . time() . '-';
+        return $prefix . sanitize_file_name($name);
     }
 }

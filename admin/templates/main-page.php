@@ -30,17 +30,29 @@ if (!defined('ABSPATH')) {
                     <td id="cb" class="manage-column column-cb check-column">
                         <input id="cb-select-all-1" type="checkbox">
                     </td>
+                    <th scope="col" class="manage-column column-image">
+                        <?php echo esc_html__('Image'); ?>
+                    </th>
                     <th scope="col" class="manage-column column-name column-primary">
                         <?php echo esc_html__('Name'); ?>
                     </th>
                     <th scope="col" class="manage-column column-position">
                         <?php echo esc_html__('Position'); ?>
                     </th>
+                    <th scope="col" class="manage-column column-email">
+                        <?php echo esc_html__('Email'); ?>
+                    </th>
+                    <th scope="col" class="manage-column column-phone">
+                        <?php echo esc_html__('Phone'); ?>
+                    </th>
                     <th scope="col" class="manage-column column-start-time">
                         <?php echo esc_html__('Start Time'); ?>
                     </th>
                     <th scope="col" class="manage-column column-end-time">
                         <?php echo esc_html__('End Time'); ?>
+                    </th>
+                    <th scope="col" class="manage-column column-status">
+                        <?php echo esc_html__('Status'); ?>
                     </th>
                     <th scope="col" class="manage-column column-created">
                         <?php echo esc_html__('Created'); ?>
@@ -57,6 +69,17 @@ if (!defined('ABSPATH')) {
                             <th scope="row" class="check-column">
                                 <input type="checkbox" name="staff_ids[]" value="<?php echo esc_attr($staff['id']); ?>">
                             </th>
+                            <td class="column-image">
+                                <?php if (!empty($staff['image_url'])) : ?>
+                                    <img src="<?php echo esc_url($staff['image_url']); ?>" 
+                                         alt="<?php echo esc_attr($staff['name']); ?>" 
+                                         style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;">
+                                <?php else : ?>
+                                    <div style="width: 50px; height: 50px; background: #f0f0f0; border: 1px solid #ddd; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #666;">
+                                        <?php echo esc_html__('No Image'); ?>
+                                    </div>
+                                <?php endif; ?>
+                            </td>
                             <td class="column-name column-primary">
                                 <strong><?php echo esc_html($staff['name']); ?></strong>
                                 <div class="row-actions">
@@ -76,11 +99,36 @@ if (!defined('ABSPATH')) {
                             <td class="column-position">
                                 <?php echo esc_html($staff['position']); ?>
                             </td>
+                            <td class="column-email">
+                                <?php if (!empty($staff['email'])) : ?>
+                                    <a href="mailto:<?php echo esc_attr($staff['email']); ?>">
+                                        <?php echo esc_html($staff['email']); ?>
+                                    </a>
+                                <?php else : ?>
+                                    <span style="color: #666;">—</span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="column-phone">
+                                <?php if (!empty($staff['phone'])) : ?>
+                                    <a href="tel:<?php echo esc_attr($staff['phone']); ?>">
+                                        <?php echo esc_html($staff['phone']); ?>
+                                    </a>
+                                <?php else : ?>
+                                    <span style="color: #666;">—</span>
+                                <?php endif; ?>
+                            </td>
                             <td class="column-start-time">
                                 <?php echo esc_html($staff['start_time']); ?>
                             </td>
                             <td class="column-end-time">
                                 <?php echo esc_html($staff['end_time']); ?>
+                            </td>
+                            <td class="column-status">
+                                <span class="status-<?php echo esc_attr($staff['status']); ?>" 
+                                      style="padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: bold; text-transform: uppercase; 
+                                             <?php echo $staff['status'] === 'active' ? 'background: #00a32a; color: white;' : 'background: #dba617; color: white;'; ?>">
+                                    <?php echo esc_html(ucfirst($staff['status'])); ?>
+                                </span>
                             </td>
                             <td class="column-created">
                                 <?php echo esc_html(date_i18n(get_option('date_format'), strtotime($staff['created_at']))); ?>
@@ -95,7 +143,7 @@ if (!defined('ABSPATH')) {
                     <?php endforeach; ?>
                 <?php else : ?>
                     <tr>
-                        <td colspan="7" class="no-items">
+                        <td colspan="11" class="no-items">
                             <?php echo esc_html__('No staff members found.'); ?>
                         </td>
                     </tr>
